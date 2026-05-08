@@ -115,6 +115,8 @@ const server = http.createServer(async (req, res) => {
       const orderNumber = "TEST_" + Date.now();
 
       const params = await buildForteParams({ amount, orderNumber });
+      console.log(params);
+      console.log(JSON.stringify(params));
 
       const html = buildPostForm(params);
 

@@ -1,6 +1,11 @@
-import { fetch } from 'wix-fetch';
+import { getPaymentSignature } from 'backend/payment-signature.web';
+import wixLocationFrontend from "wix-location-frontend";
 
-$w.onReady(function () {
+
+
+$w.onReady(async function () {
+
+
     const fieldKey        = "#amount";
     const submitBtn       = "#submit";
     const payNowBtn       = "#payNow";
@@ -46,21 +51,9 @@ $w.onReady(function () {
         $w(payNowBtn).label = "Redirecting...";
 
         try {
-            const res = await fetch("https://lammersmedia.wixsite.com/capitalcityrefuse/_functions/forte_params", {
-                method:  "POST",
-                headers: { "Content-Type": "application/json" },
-                body:    JSON.stringify({ amount: rawAmount })
-            });
-
-            const params = await res.json();
-
-            if (params.error) throw new Error(params.error);
-
-            $w("#htmlPostGate").postMessage({
-                type:   "SUBMIT_FORTE",
-                params: params
-            });
-
+            const [payment_url, params] = await getPaymentSignature(45.00);
+            wixLocationFrontend.to(payment_url);  
+     
         } catch (err) {
             console.error("Forte error:", err.message);
             $w(payNowBtn).label = "Error — Try Again";

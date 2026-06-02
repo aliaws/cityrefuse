@@ -48,6 +48,7 @@ export const getPaymentSignature = webMethod(
       pg_utc_time: utcTime,
       pg_transaction_order_number: orderNumber,
       pg_ts_hash: hash,
+      pg_transaction_description: `Subtotal: $${baseAmount} | Fee (3%): $${ccFee} | Total: $${totalAmount}`,
       pg_return_url: "https://www.capitalcityrefuse.com/success-payment-page",
     };
 

@@ -55,7 +55,7 @@ $w.onReady(async function () {
         $w(payNowBtn).label = "Redirecting...";
 
         try {
-            const [payment_url, params, breakdown] = await getPaymentSignature(rawAmount);
+            const { payment_url, params, breakdown } = await getPaymentSignature(rawAmount);
             console.log("on Signature Start");
             console.log(payment_url);
             console.log(params);

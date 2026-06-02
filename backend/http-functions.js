@@ -45,7 +45,7 @@ export async function post_forte_params(request) {
             pg_utc_time:                 utcTime,
             pg_transaction_order_number: orderNumber,
             pg_ts_hash:                  hash,
-            pg_return_url:               "https://lammersmedia.wixsite.com/mysite/payment-return",
+            pg_return_url:               "https://www.capitalcityrefuse.com/success-payment-page",
         };
 
         return ok({

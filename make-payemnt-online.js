@@ -1,15 +1,14 @@
 import { getPaymentSignature } from 'backend/payment-signature.web';
-import wixLocationFrontend from "wix-location-frontend";
+import wixWindowFrontend from "wix-window-frontend";
 
-
+let paymentInProgress = false;
 
 $w.onReady(async function () {
 
-
-    const fieldKey        = "#amount";
-    const submitBtn       = "#submit";
-    const payNowBtn       = "#payNow";
-    const descriptionText = "#description";
+    const fieldKey        = "#amount"; // step 1
+    const submitBtn       = "#submit"; // step 1
+    const payNowBtn       = "#payNow"; // step 2
+    
     const section1        = "#step1";
     const section2        = "#step2";
 
@@ -18,12 +17,12 @@ $w.onReady(async function () {
     $w(submitBtn).disable();
 
     $w(fieldKey).onInput((event) => {
-        let value = event.target.value.replace(/\D/g, '');
+        let value = event.target.value.replace(/[^0-9.]|\.(?=.*\.)/g, '');
         $w(fieldKey).value = value ? `$${value}` : '';
     });
 
     $w(fieldKey).onBlur(() => {
-        let value = $w(fieldKey).value.replace(/\D/g, '');
+        let value = $w(fieldKey).value.replace(/[^0-9.]/g, '');
         if (value) {
             $w(fieldKey).value = Number(value).toLocaleString('en-US', {
                 style:    'currency',
@@ -35,7 +34,6 @@ $w.onReady(async function () {
     $w(submitBtn).onClick(async () => {
         const amountValue = $w(fieldKey).value;
         if (amountValue) {
-            $w(descriptionText).text = `Click "Pay Now" to pay your bill for ${amountValue}`;
             await $w(section1).hide("slide", { direction: "left", duration: 500 });
             $w(section1).collapse();
             await $w(section2).expand();
@@ -44,20 +42,26 @@ $w.onReady(async function () {
     });
 
     $w(payNowBtn).onClick(async () => {
+        if (paymentInProgress) return;
+        paymentInProgress = true;
+
         const rawAmount = $w(fieldKey).value.replace(/[^0-9.]/g, '');
-        if (!rawAmount) return;
+        if (!rawAmount) {
+            paymentInProgress = false;
+            return;
+        }
 
         $w(payNowBtn).disable();
         $w(payNowBtn).label = "Redirecting...";
 
         try {
-            const [payment_url, params] = await getPaymentSignature(45.00);
-            wixLocationFrontend.to(payment_url);  
-     
+            const [payment_url, params] = await getPaymentSignature(rawAmount);
+            wixWindowFrontend.postMessage({ action: payment_url, params: params });
         } catch (err) {
             console.error("Forte error:", err.message);
             $w(payNowBtn).label = "Error — Try Again";
             $w(payNowBtn).enable();
+            paymentInProgress = false;
         }
     });
 

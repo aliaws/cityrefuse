@@ -55,8 +55,14 @@ $w.onReady(async function () {
         $w(payNowBtn).label = "Redirecting...";
 
         try {
-            const [payment_url, params] = await getPaymentSignature(rawAmount);
-            wixWindowFrontend.postMessage({ action: payment_url, params: params });
+            const [payment_url, params, breakdown] = await getPaymentSignature(rawAmount);
+            console.log("on Signature Start");
+            console.log(payment_url);
+            console.log(params);
+            console.log(breakdown);
+            console.log("on Signature End");
+
+            wixWindowFrontend.postMessage({ action: payment_url, params, breakdown });
         } catch (err) {
             console.error("Forte error:", err.message);
             $w(payNowBtn).label = "Error — Try Again";

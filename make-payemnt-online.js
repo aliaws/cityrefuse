@@ -1,9 +1,15 @@
-import { getPaymentSignature } from 'backend/payment-signature.web';
+import { getPaymentSignature, getCcFeePercentage } from 'backend/payment-signature.web';
 import wixWindowFrontend from "wix-window-frontend";
 
 let paymentInProgress = false;
+let percentage;
 
 $w.onReady(async function () {
+
+    percentage = await getCcFeePercentage();
+
+    let description = $w("#description").text;
+    $w("#description").text = description.replace(/X/g, String(percentage));
 
     const fieldKey        = "#amount"; // step 1
     const submitBtn       = "#submit"; // step 1
@@ -56,11 +62,6 @@ $w.onReady(async function () {
 
         try {
             const { payment_url, params, breakdown } = await getPaymentSignature(rawAmount);
-            console.log("on Signature Start");
-            console.log(payment_url);
-            console.log(params);
-            console.log(breakdown);
-            console.log("on Signature End");
 
             wixWindowFrontend.postMessage({ action: payment_url, params, breakdown });
         } catch (err) {

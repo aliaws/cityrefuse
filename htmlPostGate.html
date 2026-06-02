@@ -1,10 +1,6 @@
 <form id="paymentForm" method="POST" style="display:none"></form>
 <script>
 window.onmessage = function(e) {
-    console.log("on Message Start");
-    console.log(e.data);
-    console.log(e.data.action);
-    console.log("on Message End");
     if (e.data && e.data.action) {
         var f = document.getElementById('paymentForm');
         f.action = e.data.action;

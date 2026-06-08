@@ -1,5 +1,6 @@
 import { getPaymentSignature, getCcFeePercentage } from 'backend/payment-signature.web';
 import wixWindowFrontend from "wix-window-frontend";
+import wixData from 'wix-data';
 
 let paymentInProgress = false;
 let percentage;
@@ -79,10 +80,34 @@ $w.onReady(async function () {
         $w(payNowBtn).label = "Redirecting...";
 
         try {
+            // 1. Calculate values
+            const subtotal = parseFloat(rawAmount);
+            const ccFee = parseFloat((subtotal * (percentage / 100)).toFixed(2));
+            const total = parseFloat((subtotal + ccFee).toFixed(2));
+
+            // 2. Create the data payload (including enteredAmount)
+            const dataToSave = {
+                "enteredAmount": subtotal,   // <-- Added this field
+                "feePercentage": percentage,
+                "feeAmount": ccFee,
+                "totalAmount": total
+            };
+
+            // 3. Bypass permission restrictions using suppressAuth
+            const options = {
+                "suppressAuth": true
+            };
+
+            // 4. Save to CMS collection
+            await wixData.insert("PaymentAmounts", dataToSave, options);
+
+            // 5. Direct to checkout window
+            $w(payNowBtn).label = "Redirecting...";
             const { payment_url, params } = await getPaymentSignature(rawAmount);
             wixWindowFrontend.postMessage({ action: payment_url, params });
+
         } catch (err) {
-            console.error("Forte error:", err.message);
+            console.error("Error during transaction processing:", err.message);
             $w(payNowBtn).label = "Error — Try Again";
             $w(payNowBtn).enable();
             paymentInProgress = false;
